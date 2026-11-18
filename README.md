@@ -54,7 +54,12 @@ Target pemeriksaan adalah `No issues found!`. Perintah di atas merupakan langkah
 myportofolio_mobile/
 ├── lib/
 │   ├── main.dart       # Entry point dan konfigurasi aplikasi
-│   └── menu.dart       # Halaman utama, kartu identitas, dan kartu tombol
+│   ├── screens/
+│   │   ├── menu.dart          # Halaman utama, kartu identitas, dan model menu
+│   │   └── project_form.dart  # Form proyek sesuai Tutorial 09
+│   └── widgets/
+│       ├── left_drawer.dart   # Navigasi drawer
+│       └── project_card.dart  # Kartu tombol
 ├── test/
 │   └── widget_test.dart
 ├── pubspec.yaml       # Konfigurasi proyek dan dependencies
