@@ -114,6 +114,15 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
       return;
     }
 
+    final startDate = _startDateKey.currentState?.value;
+    final endDate = _endDateKey.currentState?.value;
+    final dates = MaterialLocalizations.of(context);
+
+    final startLabel =
+        startDate == null ? 'Belum diisi' : dates.formatShortDate(startDate);
+    final endLabel =
+        endDate == null ? 'Belum diisi' : dates.formatShortDate(endDate);
+
     FocusScope.of(context).unfocus();
 
     showDialog<void>(
@@ -130,6 +139,8 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                 Text('Deskripsi Experience: ${_description.trim()}'),
                 Text('Kategori: ${_categories[_category]}'),
                 Text('URL Gambar: ${_thumbnail.isEmpty ? 'Belum diisi' : _thumbnail}'),
+                Text('Tanggal Mulai: $startLabel'),
+                Text('Tanggal Selesai: $endLabel'),
               ],
             ),
           ),
@@ -215,6 +226,25 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                       return null;
                     },
                   ),
+                ),
+                _buildDateField(
+                  fieldKey: _startDateKey,
+                  label: 'Tanggal Mulai (opsional)',
+                ),
+                _buildDateField(
+                  fieldKey: _endDateKey,
+                  label: 'Tanggal Selesai (opsional)',
+                  validator: (endDate) {
+                    final startDate = _startDateKey.currentState?.value;
+
+                    if (startDate != null &&
+                        endDate != null &&
+                        endDate.isBefore(startDate)) {
+                      return 'Tanggal selesai tidak boleh sebelum tanggal mulai.';
+                    }
+
+                    return null;
+                  },
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
