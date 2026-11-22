@@ -160,7 +160,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tambah Pengalaman'),
-        backgroundColor: Colors.indigo,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
       drawer: const LeftDrawer(),
@@ -215,7 +215,9 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                     validator: (value) {
                       final text = value?.trim() ?? '';
                       if (text.isEmpty) return null;
-
+                      if (text.runes.length > 200) {
+                        return 'URL gambar maksimal 200 karakter.';
+                      }
                       final url = Uri.tryParse(text);
                       if (url == null ||
                           (url.scheme != 'http' && url.scheme != 'https') ||
