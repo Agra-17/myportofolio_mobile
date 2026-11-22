@@ -16,6 +16,8 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
   String _description = '';
   String _category = 'full-time';
   String _thumbnail = '';
+  final _startDateKey = GlobalKey<FormFieldState<DateTime>>();
+  final _endDateKey = GlobalKey<FormFieldState<DateTime>>();
 
   static const _categories = {
     'internship': 'Internship',
@@ -53,6 +55,59 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
       ),
     );
   }
+
+  Widget _buildDateField({
+  required GlobalKey<FormFieldState<DateTime>> fieldKey,
+  required String label,
+  String? Function(DateTime?)? validator,
+}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: FormField<DateTime>(
+      key: fieldKey,
+      validator: validator,
+      builder: (field) {
+        final date = field.value;
+
+        return InkWell(
+          onTap: () async {
+            FocusScope.of(context).unfocus();
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: date ?? DateTime.now(),
+              firstDate: DateTime(1),
+              lastDate: DateTime(9999, 12, 31),
+            );
+
+            if (field.mounted && picked != null) {
+              field.didChange(picked);
+            }
+          },
+          child: InputDecorator(
+            decoration: InputDecoration(
+              labelText: label,
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.calendar_today),
+              errorText: field.errorText,
+              suffixIcon: date == null
+                  ? null
+                  : IconButton(
+                      tooltip: 'Kosongkan tanggal',
+                      icon: const Icon(Icons.clear),
+                      onPressed: () => field.didChange(null),
+                    ),
+            ),
+            child: Text(
+              date == null
+                  ? 'Pilih tanggal'
+                  : MaterialLocalizations.of(context).formatShortDate(date),
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
 
   void _showSummary() {
     if (!_formKey.currentState!.validate()) {
