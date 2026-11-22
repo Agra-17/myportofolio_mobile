@@ -20,6 +20,11 @@ class MyHomePage extends StatelessWidget {
       Icons.add_circle,
       const Color.fromARGB(255, 201, 217, 111),
     ),
+    ItemHomepage(
+      "Tambah Pengalaman",
+      Icons.work_outline,
+      const Color.fromARGB(255, 79, 128, 104),
+    ),
     ItemHomepage("Logout", Icons.logout, Color.fromARGB(255, 168, 63, 50)),
   ];
 
@@ -72,16 +77,12 @@ class MyHomePage extends StatelessWidget {
 
                   // GridView menampilkan kartu tombol dalam tata letak kisi 3 kolom.
                   GridView.count(
-                    primary: true,
-                    padding: const EdgeInsets.all(20),
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
+                    primary: false,
                     crossAxisCount: 3,
-                    // shrinkWrap agar ukuran kisi menyesuaikan tinggi konten anak.
+                    mainAxisExtent: 140,
                     shrinkWrap: true,
-                    children: items.map((ItemHomepage item) {
-                      return ItemCard(item);
-                    }).toList(),
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: items.map((item) => ItemCard(item)).toList(),
                   ),
                 ],
               ),

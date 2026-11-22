@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
+import 'package:myportofolio_mobile/screens/experience_form.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -49,6 +50,20 @@ class LeftDrawer extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const ProjectFormPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.work_outline),
+            title: const Text('Tambah Pengalaman'),
+            onTap: () {
+              final navigator = Navigator.of(context);
+
+              navigator.pop(); // Tutup drawer terlebih dahulu.
+              navigator.push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ExperienceFormPage(),
                 ),
               );
             },
