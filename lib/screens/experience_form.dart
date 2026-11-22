@@ -15,6 +15,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
   String _title = '';
   String _description = '';
   String _category = 'full-time';
+  String _thumbnail = '';
 
   static const _categories = {
     'internship': 'Internship',
@@ -73,6 +74,7 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                 Text('Nama Experience: ${_title.trim()}'),
                 Text('Deskripsi Experience: ${_description.trim()}'),
                 Text('Kategori: ${_categories[_category]}'),
+                Text('URL Gambar: ${_thumbnail.isEmpty ? 'Belum diisi' : _thumbnail}'),
               ],
             ),
           ),
@@ -132,6 +134,30 @@ class _ExperienceFormPageState extends State<ExperienceFormPage> {
                       if (value != null) {
                         setState(() => _category = value);
                       }
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'URL Gambar Experience (opsional)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.url,
+                    onChanged: (value) => _thumbnail = value.trim(),
+                    validator: (value) {
+                      final text = value?.trim() ?? '';
+                      if (text.isEmpty) return null;
+
+                      final url = Uri.tryParse(text);
+                      if (url == null ||
+                          (url.scheme != 'http' && url.scheme != 'https') ||
+                          url.host.isEmpty ||
+                          RegExp(r'\s').hasMatch(text)) {
+                        return 'Masukkan URL gambar yang valid.';
+                      }
+                      return null;
                     },
                   ),
                 ),
