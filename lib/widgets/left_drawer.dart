@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
+import 'package:myportofolio_mobile/screens/experience_form.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -22,11 +23,15 @@ class LeftDrawer extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 10),
                 Text(
                   'Explore personal projects and experiences!',
                   style: TextStyle(fontSize: 15, color: Colors.white),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -49,6 +54,20 @@ class LeftDrawer extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const ProjectFormPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.work_outline),
+            title: const Text('Tambah Pengalaman'),
+            onTap: () {
+              final navigator = Navigator.of(context);
+
+              navigator.pop(); // Tutup drawer terlebih dahulu.
+              navigator.push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ExperienceFormPage(),
                 ),
               );
             },
