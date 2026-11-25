@@ -1,94 +1,92 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/main.dart';
-import 'package:myportofolio_mobile/screens/menu.dart';
-import 'package:myportofolio_mobile/screens/project_form.dart';
+import 'package:myportofolio_mobile/screens/achievement_form_screen.dart';
+import 'package:myportofolio_mobile/screens/achievement_list_screen.dart';
+import 'package:myportofolio_mobile/screens/login_screen.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
 
-Future<void> openForm(WidgetTester tester) async {
-  await tester.pumpWidget(const MyApp());
-  await tester.tap(find.text('Tambah Proyek'));
-  await tester.pumpAndSettle();
-  await tester.pump(const Duration(seconds: 4));
-  await tester.pumpAndSettle();
+/// MockClient berpura-pura menjadi server Django, jadi test tidak butuh internet.
+MockClient fakeServer() {
+  return MockClient((request) async {
+    if (request.url.path == '/api/v1/achievements/' &&
+        request.method == 'GET') {
+      return http.Response(
+        jsonEncode([
+          {
+            'id': '11111111-1111-1111-1111-111111111111',
+            'title': 'Juara 1 Hackathon',
+            'description': 'Membuat aplikasi mobile.',
+            'scale': 'national',
+            'date_achieved': '2026-11-01',
+            'issuer': 'Fasilkom UI',
+          },
+        ]),
+        200,
+      );
+    }
+    if (request.url.path == '/api/v1/auth/token/') {
+      return http.Response(jsonEncode({'token': 'abc123'}), 200);
+    }
+    return http.Response('Not found', 404);
+  });
 }
 
-Future<void> saveForm(WidgetTester tester) async {
-  await tester.ensureVisible(find.text('Save'));
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('Save'));
+Future<void> openApp(WidgetTester tester) async {
+  final apiClient = ApiClient(client: fakeServer(), baseUrl: 'http://test');
+  await tester.pumpWidget(MyApp(apiClient: apiClient));
+}
+
+Future<void> tapMenu(WidgetTester tester, String name) async {
+  await tester.tap(find.text(name));
   await tester.pumpAndSettle();
 }
 
 void main() {
-  testWidgets('Kartu membuka form dan Back kembali ke halaman utama', (
+  testWidgets('Halaman utama menampilkan tombol menu', (tester) async {
+    await openApp(tester);
+
+    expect(find.text('Lihat Achievement'), findsOneWidget);
+    expect(find.text('Tambah Achievement'), findsOneWidget);
+    expect(find.text('Logout'), findsOneWidget);
+  });
+
+  testWidgets('Daftar achievement diambil dari API', (tester) async {
+    await openApp(tester);
+    await tapMenu(tester, 'Lihat Achievement');
+
+    expect(find.byType(AchievementListScreen), findsOneWidget);
+    expect(find.text('Juara 1 Hackathon'), findsOneWidget);
+  });
+
+  testWidgets('Tambah Achievement saat belum login membuka LoginScreen', (
     tester,
   ) async {
-    await openForm(tester);
-    expect(find.byType(ProjectFormPage), findsOneWidget);
-    final navigator = tester.state<NavigatorState>(
-      find.byType(Navigator).first,
-    );
-    expect(navigator.canPop(), isTrue);
-    navigator.pop();
-    await tester.pumpAndSettle();
-    expect(find.byType(MyHomePage), findsOneWidget);
-    expect(find.byType(ProjectFormPage), findsNothing);
+    await openApp(tester);
+    await tapMenu(tester, 'Tambah Achievement');
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(AchievementFormScreen), findsNothing);
   });
 
-  testWidgets('Nama dan deskripsi kosong atau spasi ditolak', (tester) async {
-    await openForm(tester);
-    await saveForm(tester);
-    expect(find.text('Enter a project name.'), findsOneWidget);
-    expect(find.text('Enter a project description.'), findsOneWidget);
-    expect(find.byType(AlertDialog), findsNothing);
-    await tester.enterText(find.byType(TextFormField).at(0), '   ');
-    await tester.enterText(find.byType(TextFormField).at(1), '   ');
-    await saveForm(tester);
-    expect(find.text('Enter a project name.'), findsOneWidget);
-    expect(find.text('Enter a project description.'), findsOneWidget);
-  });
+  testWidgets('Setelah login, form achievement terbuka', (tester) async {
+    await openApp(tester);
+    await tapMenu(tester, 'Tambah Achievement');
 
-  testWidgets('Teknologi dan tautan boleh dikosongkan', (tester) async {
-    await openForm(tester);
-    await tester.enterText(find.byType(TextFormField).at(0), 'Portofolio');
-    await tester.enterText(find.byType(TextFormField).at(1), 'Proyek pribadi');
-    await saveForm(tester);
-    expect(find.text('Project Name: Portofolio'), findsOneWidget);
-    expect(find.text('Category: Web Development'), findsOneWidget);
-    expect(find.text('Technologies: '), findsOneWidget);
-    expect(find.text('Link: '), findsOneWidget);
-  });
+    await tester.enterText(find.byType(TextFormField).at(0), 'admin');
+    await tester.enterText(find.byType(TextFormField).at(1), 'password');
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
+    await tester.pumpAndSettle();
 
-  testWidgets('Dialog memuat lima nilai dan OK mereset kolom teks', (
-    tester,
-  ) async {
-    await openForm(tester);
-    await tester.enterText(find.byType(TextFormField).at(0), 'CatatTani');
-    await tester.enterText(
-      find.byType(TextFormField).at(1),
-      'Catatan curah hujan',
-    );
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    expect(find.byType(AchievementFormScreen), findsOneWidget);
+
+    // Form kosong tidak boleh dikirim.
+    await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Data Science').last);
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField).at(2), 'Flutter, Django');
-    await tester.enterText(
-      find.byType(TextFormField).at(3),
-      'https://example.com',
-    );
-    await saveForm(tester);
-    expect(find.text('Project Name: CatatTani'), findsOneWidget);
-    expect(find.text('Description: Catatan curah hujan'), findsOneWidget);
-    expect(find.text('Category: Data Science'), findsOneWidget);
-    expect(find.text('Technologies: Flutter, Django'), findsOneWidget);
-    expect(find.text('Link: https://example.com'), findsOneWidget);
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
-    for (final field in tester.widgetList<EditableText>(
-      find.byType(EditableText),
-    )) {
-      expect(field.controller.text, isEmpty);
-    }
+    expect(find.text('Title cannot be empty!'), findsOneWidget);
   });
 }
