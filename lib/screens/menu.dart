@@ -11,12 +11,12 @@ class MyHomePage extends StatelessWidget {
 
   final List<ItemHomepage> items = [
     ItemHomepage(
-      "Lihat Proyek",
-      Icons.folder,
+      "Lihat Achievement",
+      Icons.emoji_events,
       const Color.fromARGB(255, 79, 128, 104),
     ),
     ItemHomepage(
-      "Tambah Proyek",
+      "Tambah Achievement",
       Icons.add_circle,
       const Color.fromARGB(255, 201, 217, 111),
     ),

@@ -1,13 +1,21 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:myportofolio_mobile/screens/menu.dart';
-import 'package:myportofolio_mobile/screens/project_form.dart';
+import 'package:myportofolio_mobile/screens/achievement_form_screen.dart';
+import 'package:myportofolio_mobile/screens/achievement_list_screen.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/screens/login_screen.dart';
+import 'package:myportofolio_mobile/screens/menu.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
+import 'package:provider/provider.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // watch: drawer otomatis dibangun ulang ketika status login berubah.
+    final isLoggedIn = context.watch<AuthState>().isLoggedIn;
+
     return Drawer(
       child: ListView(
         children: [
@@ -47,13 +55,28 @@ class LeftDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.add_circle_outline),
-            title: const Text('Add Project'),
+            leading: const Icon(Icons.emoji_events_outlined),
+            title: const Text('Achievements'),
             onTap: () {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const ProjectFormPage(),
+                  builder: (context) => const AchievementListScreen(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.add_circle_outline),
+            title: const Text('Add Achievement'),
+            onTap: () async {
+              final navigator = Navigator.of(context);
+              // Lindungi halaman form: wajib login dulu.
+              final loggedIn = await ensureLoggedIn(context);
+              if (!loggedIn) return;
+              navigator.pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const AchievementFormScreen(),
                 ),
               );
             },
@@ -72,6 +95,29 @@ class LeftDrawer extends StatelessWidget {
               );
             },
           ),
+          if (!isLoggedIn)
+            ListTile(
+              leading: const Icon(Icons.login),
+              title: const Text('Login'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              },
+            ),
+          if (isLoggedIn)
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                await context.read<AuthState>().logout();
+                messenger.showSnackBar(
+                  const SnackBar(content: Text('You have been logged out.')),
+                );
+              },
+            ),
         ],
       ),
     );
